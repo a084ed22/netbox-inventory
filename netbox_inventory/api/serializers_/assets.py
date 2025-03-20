@@ -11,6 +11,7 @@ from dcim.api.serializers import (
     RackSerializer,
     RackTypeSerializer,
 )
+from netbox.api.fields import SerializedPKRelatedField
 from netbox.api.serializers import NestedGroupModelSerializer, NetBoxModelSerializer
 from tenancy.api.serializers import ContactSerializer, TenantSerializer
 
@@ -20,42 +21,13 @@ from .deliveries import *
 from .nested import *
 
 
-class InventoryItemGroupSerializer(NestedGroupModelSerializer):
-    url = serializers.HyperlinkedIdentityField(
-        view_name='plugins-api:netbox_inventory-api:inventoryitemgroup-detail'
-    )
-    parent = NestedInventoryItemGroupSerializer(
-        required=False, allow_null=True, default=None
-    )
-    asset_count = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = InventoryItemGroup
-        fields = (
-            'id',
-            'url',
-            'display',
-            'name',
-            'parent',
-            'description',
-            'comments',
-            'tags',
-            'custom_fields',
-            'created',
-            'last_updated',
-            'asset_count',
-            '_depth',
-        )
-        brief_fields = ('id', 'url', 'display', 'name', 'description', '_depth')
-
-
 class InventoryItemTypeSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name='plugins-api:netbox_inventory-api:inventoryitemtype-detail'
     )
     manufacturer = ManufacturerSerializer(nested=True)
-    inventoryitem_group = InventoryItemGroupSerializer(
-        nested=True, required=False, allow_null=True, default=None
+    inventoryitem_groups = NestedInventoryItemGroupSerializer(
+        nested=True, read_only=True, many=True
     )
     asset_count = serializers.IntegerField(read_only=True)
 
@@ -69,7 +41,7 @@ class InventoryItemTypeSerializer(NetBoxModelSerializer):
             'slug',
             'manufacturer',
             'part_number',
-            'inventoryitem_group',
+            'inventoryitem_groups',
             'description',
             'comments',
             'tags',
@@ -87,6 +59,43 @@ class InventoryItemTypeSerializer(NetBoxModelSerializer):
             'slug',
             'description',
         )
+
+
+class InventoryItemGroupSerializer(NestedGroupModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name='plugins-api:netbox_inventory-api:inventoryitemgroup-detail'
+    )
+    parent = NestedInventoryItemGroupSerializer(
+        required=False, allow_null=True, default=None
+    )
+    inventoryitem_types = SerializedPKRelatedField(
+        queryset=InventoryItemType.objects.all(),
+        serializer=InventoryItemTypeSerializer,
+        nested=True,
+        required=False,
+        many=True,
+    )
+    asset_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = InventoryItemGroup
+        fields = (
+            'id',
+            'url',
+            'display',
+            'name',
+            'parent',
+            'description',
+            'inventoryitem_types',
+            'comments',
+            'tags',
+            'custom_fields',
+            'created',
+            'last_updated',
+            'asset_count',
+            '_depth',
+        )
+        brief_fields = ('id', 'url', 'display', 'name', 'description', '_depth')
 
 
 class AssetSerializer(NetBoxModelSerializer):

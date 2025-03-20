@@ -1,7 +1,12 @@
 from dcim.models import DeviceType, Location, Manufacturer, ModuleType, RackType, Site
 from netbox.forms import NetBoxModelForm
 from tenancy.models import Contact, ContactGroup, Tenant
-from utilities.forms.fields import CommentField, DynamicModelChoiceField, SlugField
+from utilities.forms.fields import (
+    CommentField,
+    DynamicModelChoiceField,
+    DynamicModelMultipleChoiceField,
+    SlugField,
+)
 from utilities.forms.rendering import FieldSet
 from utilities.forms.widgets import DatePicker
 
@@ -329,11 +334,6 @@ class DeliveryForm(NetBoxModelForm):
 
 class InventoryItemTypeForm(NetBoxModelForm):
     slug = SlugField(slug_source='model')
-    inventoryitem_group = DynamicModelChoiceField(
-        queryset=InventoryItemGroup.objects.all(),
-        required=False,
-        label='Inventory item group',
-    )
     comments = CommentField()
 
     fieldsets = (
@@ -343,7 +343,6 @@ class InventoryItemTypeForm(NetBoxModelForm):
             'slug',
             'description',
             'part_number',
-            'inventoryitem_group',
             'tags',
             name='Inventory Item Type',
         ),
@@ -357,7 +356,6 @@ class InventoryItemTypeForm(NetBoxModelForm):
             'slug',
             'description',
             'part_number',
-            'inventoryitem_group',
             'tags',
             'comments',
         )
@@ -369,10 +367,16 @@ class InventoryItemGroupForm(NetBoxModelForm):
         required=False,
         label='Parent',
     )
+    inventoryitem_types = DynamicModelMultipleChoiceField(
+        queryset=InventoryItemType.objects.all(),
+        required=False,
+        label='Inventory Item Types',
+    )
     comments = CommentField()
 
     fieldsets = (
         FieldSet('name', 'parent', 'description', 'tags', name='Inventory Item Group'),
+        FieldSet('inventoryitem_types', name='Types'),
     )
 
     class Meta:
@@ -381,6 +385,7 @@ class InventoryItemGroupForm(NetBoxModelForm):
             'name',
             'parent',
             'description',
+            'inventoryitem_types',
             'tags',
             'comments',
         )
