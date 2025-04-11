@@ -739,19 +739,46 @@ class InventoryItemGroupBulkEditForm(NetBoxModelBulkEditForm):
         queryset=InventoryItemGroup.objects.all(), required=False
     )
     description = forms.CharField(max_length=200, required=False)
+    device_types = DynamicModelMultipleChoiceField(
+        queryset=DeviceType.objects.all(),
+        required=False,
+        label='Device Types',
+    )
+    module_types = DynamicModelMultipleChoiceField(
+        queryset=ModuleType.objects.all(),
+        required=False,
+        label='Module Types',
+    )
     inventoryitem_types = DynamicModelMultipleChoiceField(
         queryset=InventoryItemType.objects.all(),
         required=False,
         label='Inventory Item Types',
+    )
+    rack_types = DynamicModelMultipleChoiceField(
+        queryset=RackType.objects.all(),
+        required=False,
+        label='Rack Types',
     )
     comments = CommentField(
         required=False,
     )
 
     model = InventoryItemGroup
-    fieldsets = (FieldSet('parent', 'description', 'inventoryitem_types'),)
+    fieldsets = (
+        FieldSet(
+            'parent',
+            'description',
+            'device_types',
+            'module_types',
+            'inventoryitem_types',
+            'rack_types',
+        ),
+    )
     nullable_fields = (
         'parent',
         'description',
+        'device_types',
+        'module_types',
         'inventoryitem_types',
+        'rack_types',
     )
