@@ -6,7 +6,6 @@ from django.urls import reverse
 
 from netbox.models import NestedGroupModel, NetBoxModel
 from netbox.models.features import ImageAttachmentsMixin
-from utilities.querysets import RestrictedQuerySet
 
 from ..choices import AssetStatusChoices, HardwareKindChoices
 from ..utils import (
